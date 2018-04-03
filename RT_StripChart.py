@@ -20,7 +20,7 @@ ser = serial.Serial(port,baud,timeout=1)
 
 
 class Scope(object):
-    def __init__(self, ax, maxt=2, dt=0.02):
+    def __init__(self, ax, maxt=2, dt=0.04):
         self.ax = ax
         self.dt = dt
         self.maxt = maxt
@@ -58,6 +58,6 @@ fig, ax = plt.subplots()
 scope = Scope(ax)
 
 # pass a generator in "emitter" to produce data for the update func
-ani = animation.FuncAnimation(fig, scope.update, emitter, interval=0,
+ani = animation.FuncAnimation(fig, scope.update, emitter, interval=5,
                               blit=True)
 plt.show()
