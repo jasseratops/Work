@@ -1,26 +1,18 @@
-# JAscripts
-# RT_graph2
+# Work
+# RT_StripChart
 # Jasser Alshehri
 # Starkey Hearing Technologies
-# 3/27/2018
+# 4/4/2018
+
 
 import numpy as np
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
-import serial
-import time
-port = 'com4'
-baud = 9600
-
-if serial.Serial(port,baud).is_open:
-    serial.Serial(port,baud).close()
-
-ser = serial.Serial(port,baud,timeout=1)
 
 
 class Scope(object):
-    def __init__(self, ax, maxt=2, dt=0.04):
+    def __init__(self, ax, maxt=2, dt=0.02):
         self.ax = ax
         self.dt = dt
         self.maxt = maxt
@@ -28,11 +20,10 @@ class Scope(object):
         self.ydata = [0]
         self.line = Line2D(self.tdata, self.ydata)
         self.ax.add_line(self.line)
-        self.ax.set_ylim(-.1, 1025)
+        self.ax.set_ylim(-.1, 1.1)
         self.ax.set_xlim(0, self.maxt)
 
     def update(self, y):
-
         lastt = self.tdata[-1]
         if lastt > self.tdata[0] + self.maxt:  # reset the arrays
             self.tdata = [self.tdata[-1]]
@@ -47,17 +38,25 @@ class Scope(object):
         return self.line,
 
 
-def emitter():
+def emitter(p=0.03):
+    'return a random value with probability p, else 0'
     while True:
-        ser.reset_input_buffer()
-        ser.readline()
-        val = ser.readline()[:-2]
-        yield int(val)
+        v = np.random.rand(1)
+        if v > p:
+            yield 0.
+        else:
+            yield np.random.rand(1)
+
+# Fixing random state for reproducibility
+np.random.seed(19680801)
+
 
 fig, ax = plt.subplots()
 scope = Scope(ax)
 
 # pass a generator in "emitter" to produce data for the update func
-ani = animation.FuncAnimation(fig, scope.update, emitter, interval=5,
+ani = animation.FuncAnimation(fig, scope.update, emitter, interval=10,
                               blit=True)
+
+
 plt.show()
