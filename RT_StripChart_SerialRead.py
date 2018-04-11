@@ -17,6 +17,8 @@ if serial.Serial(port,baud).is_open:
     serial.Serial(port,baud).close()
 
 ser = serial.Serial(port,baud,timeout=1)
+ser.reset_input_buffer()
+ser.readline()
 
 
 class Scope(object):
@@ -28,7 +30,7 @@ class Scope(object):
         self.ydata = [0]
         self.line = Line2D(self.tdata, self.ydata)
         self.ax.add_line(self.line)
-        self.ax.set_ylim(-.1, 1025)
+        self.ax.set_ylim(-.1, 2)
         self.ax.set_xlim(0, self.maxt)
 
     def update(self, y):
@@ -49,10 +51,15 @@ class Scope(object):
 
 def emitter():
     while True:
-        ser.reset_input_buffer()
-        ser.readline()
-        val = ser.readline()[:-2]
-        yield int(val)
+        #ser.reset_input_buffer()
+        #ser.readline()
+
+        val = ser.readline()
+        allData = val.split(",")
+        #for i in range(len(allData)):
+            #print allData[i]
+
+        yield allData[2]
 
 fig, ax = plt.subplots()
 scope = Scope(ax)

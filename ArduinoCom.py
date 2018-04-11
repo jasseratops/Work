@@ -27,21 +27,27 @@ def main(args):
     xar = []
     yar = []
 
+    ser.reset_input_buffer()
+    ser.readline()
     while True:
 
         start = time.time()
-        ser.reset_input_buffer()
-        ser.readline()
-        val = ser.readline()[:-2]
 
+        val = ser.readline()
+        allData = val.split(",")
+
+
+
+        '''
         xar.append(count)
         yar.append(int(val))
         count += 1
+        '''
 
-        print val
         print (time.time()-start)
 
     ser.close()
+
     return 0
 
 
