@@ -13,6 +13,10 @@ import time
 port = 'com4'
 baud = 9600
 
+mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
+axis = 2            # 0: x,    1: y,     2: z
+
+
 if serial.Serial(port,baud).is_open:
     serial.Serial(port,baud).close()
 
@@ -20,9 +24,21 @@ ser = serial.Serial(port,baud,timeout=1)
 ser.reset_input_buffer()
 ser.readline()
 
+if mode == 0:
+    ind = 0 + axis
+    yMin = -16.0
+    yMax = 16.0
+elif mode == 1:
+    ind = 3 + axis
+    yMin = -10
+    yMax = 10
+else:
+    ind = 6
+    yMin = 10
+    yMax = 35
 
 class Scope(object):
-    def __init__(self, ax, maxt=2, dt=0.04):
+    def __init__(self, ax, maxt=4, dt=0.01):
         self.ax = ax
         self.dt = dt
         self.maxt = maxt
@@ -30,7 +46,7 @@ class Scope(object):
         self.ydata = [0]
         self.line = Line2D(self.tdata, self.ydata)
         self.ax.add_line(self.line)
-        self.ax.set_ylim(-.1, 2)
+        self.ax.set_ylim(yMin, yMax)
         self.ax.set_xlim(0, self.maxt)
 
     def update(self, y):
@@ -56,15 +72,16 @@ def emitter():
 
         val = ser.readline()
         allData = val.split(",")
+
         #for i in range(len(allData)):
             #print allData[i]
-
-        yield allData[2]
+        yield allData[ind]
 
 fig, ax = plt.subplots()
 scope = Scope(ax)
 
 # pass a generator in "emitter" to produce data for the update func
-ani = animation.FuncAnimation(fig, scope.update, emitter, interval=5,
-                              blit=True)
+ani = animation.FuncAnimation(fig, scope.update, emitter, interval=5,blit=True)
 plt.show()
+
+print scope.tdata
