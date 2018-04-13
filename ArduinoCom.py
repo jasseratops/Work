@@ -11,7 +11,7 @@ import matplotlib.animation as animation
 import time
 
 port = 'com4'
-baud = 9600
+baud = 38400
 
 if serial.Serial(port,baud).is_open:
     serial.Serial(port,baud).close()
@@ -32,6 +32,9 @@ def main(args):
     while True:
 
         start = time.time()
+
+        ser.reset_input_buffer()
+        ser.readline()
 
         val = ser.readline()
         allData = val.split(",")

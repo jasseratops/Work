@@ -10,8 +10,11 @@ import matplotlib.pyplot as plt
 import matplotlib.animation as animation
 import serial
 import time
+import re
+
+
 port = 'com4'
-baud = 9600
+baud = 19200
 
 mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
 axis = 2            # 0: x,    1: y,     2: z
@@ -37,8 +40,19 @@ else:
     yMin = 10
     yMax = 35
 
+def createTimeStamp():
+    ts = time.strftime("%c")
+    ts = re.sub(" ", "_", ts)
+    ts = re.sub("/", "-", ts)
+    ts = re.sub(":", "-", ts)
+
+    return ts
+
+timeStamp = createTimeStamp()
+
 class Scope(object):
-    def __init__(self, ax, maxt=4, dt=0.01):
+    def __init__(self, ax, maxt=4, dt=0.001):
+        #print "going into scope INIT"
         self.ax = ax
         self.dt = dt
         self.maxt = maxt
@@ -50,7 +64,7 @@ class Scope(object):
         self.ax.set_xlim(0, self.maxt)
 
     def update(self, y):
-
+        #print "going into scope UPDATE"
         lastt = self.tdata[-1]
         if lastt > self.tdata[0] + self.maxt:  # reset the arrays
             self.tdata = [self.tdata[-1]]
@@ -64,13 +78,20 @@ class Scope(object):
         self.line.set_data(self.tdata, self.ydata)
         return self.line,
 
+def flush():
+    ser.reset_input_buffer()
+    ser.readline()
+
 
 def emitter():
+    #print "hello from EMITTER"
     while True:
-        #ser.reset_input_buffer()
-        #ser.readline()
+        #print "while loop"
+        #flush()
 
         val = ser.readline()
+        print val
+        print ser.in_waiting
         allData = val.split(",")
 
         #for i in range(len(allData)):
@@ -81,7 +102,5 @@ fig, ax = plt.subplots()
 scope = Scope(ax)
 
 # pass a generator in "emitter" to produce data for the update func
-ani = animation.FuncAnimation(fig, scope.update, emitter, interval=5,blit=True)
+ani = animation.FuncAnimation(fig, scope.update, emitter, interval=1,blit=True)
 plt.show()
-
-print scope.tdata
