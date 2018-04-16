@@ -18,6 +18,9 @@ if serial.Serial(port,baud).is_open:
 
 ser = serial.Serial(port,baud,timeout=1)
 
+def flush():
+    ser.reset_input_buffer()
+    ser.readline()
 
 def main(args):
     #fig = plt.figure()
@@ -32,9 +35,7 @@ def main(args):
     while True:
 
         start = time.time()
-
-        ser.reset_input_buffer()
-        ser.readline()
+        flush()
 
         val = ser.readline()
         allData = val.split(",")
@@ -46,6 +47,7 @@ def main(args):
         yar.append(int(val))
         count += 1
         '''
+        print ser.in_waiting
 
         print (time.time()-start)
 
