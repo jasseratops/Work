@@ -15,7 +15,7 @@ import xlwt
 
 
 port = 'com4'
-baud = 9600
+baud = 19200
 
 mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
 axis = 2            # 0: x,    1: y,     2: z
@@ -63,7 +63,7 @@ class Scope(object):
         self.ax = ax
         self.dt = dt
         self.maxt = maxt
-        self.tdata = [0]
+        self.tdata = [-dt]
         self.ydata = [0]
         self.line = Line2D(self.tdata, self.ydata)
         self.ax.add_line(self.line)
@@ -79,7 +79,7 @@ class Scope(object):
             self.ax.set_xlim(self.tdata[0], self.tdata[0] + self.maxt)
             self.ax.figure.canvas.draw()
 
-        t = time.time() - startTime #self.tdata[-1] + self.dt
+        t = self.tdata[-1] + self.dt
         print t
         self.tdata.append(t)
         tArray.append(t)
@@ -101,7 +101,7 @@ def emitter():
         print ser.in_waiting
         allData = val.split(",")
 
-        yArray.append(allData)
+        yArray.append(allData[:-1])     # discarding return line characters from the serial read.
 
 
         yield allData[ind]
@@ -125,7 +125,10 @@ def writeToXL(t,yD):
     sheet1 = book.add_sheet("data")
 
     hdrs = ["Time (s)","accX [g]","accY [g]","accZ [g]",
-            "gyroX[d/s]","gyroY[d/s]","gyroZ[d/s]","temp [C]"]
+            "gyroX[deg/s]","gyroY[deg/s]","gyroZ[deg/s]","temp [C]"]
+    accHdrs = hdrs[0:4]
+    gyroHdrs = hdrs[0:1]+hdrs[4:7]
+    tempHdrs = hdrs[0:1]+hdrs[7:]
     dat = yArray
 
     noRows = np.shape(dat)[0] + 1
@@ -140,12 +143,73 @@ def writeToXL(t,yD):
         else:
             for index in range(noCols):
                 if index == 0:
-                    value = t[num-1]
+                    value = float("{0:.2f}".format(t[num-1]))
                     row.write(index, value)
                 else:
-                    value = yD[num-1][index-1]
+                    value = float("{0:.2f}".format(float(yD[num-1][index-1])))
                     row.write(index, value)
-        book.save(dataPath+".xls")
+
+    ###### Add AccData separately ######
+    sheet2 = book.add_sheet("accData")
+    noRows = np.shape(dat)[0] + 1
+    noCols = len(accHdrs)
+
+    for num in range(noRows):               # accomodating for number of data rows + header row
+        row = sheet2.row(num)               # choosing a row to operate on
+        if num == 0:
+            for index in range(noCols):
+                value = accHdrs[index]
+                row.write(index, value)
+        else:
+            for index in range(noCols):
+                if index == 0:
+                    value = float("{0:.2f}".format(t[num-1]))
+                    row.write(index, value)
+                else:
+                    value = float("{0:.2f}".format(float(yD[num-1][index-1])))
+                    row.write(index, value)
+
+    ###### Add GyroData separately ######
+    sheet3 = book.add_sheet("gyroData")
+    noRows = np.shape(dat)[0] + 1
+    noCols = len(gyroHdrs)
+
+    for num in range(noRows):  # accomodating for number of data rows + header row
+        row = sheet3.row(num)  # choosing a row to operate on
+        if num == 0:
+            for index in range(noCols):
+                value = gyroHdrs[index]
+                row.write(index, value)
+        else:
+            for index in range(noCols):
+                if index == 0:
+                    value = float("{0:.2f}".format(t[num - 1]))
+                    row.write(index, value)
+                else:
+                    value = float("{0:.2f}".format(float(yD[num - 1][index - 1 + 3])))
+                    row.write(index, value)
+
+    ###### Add TempData separately ######
+    sheet4 = book.add_sheet("tempData")
+    noRows = np.shape(dat)[0] + 1
+    noCols = len(tempHdrs)
+
+    for num in range(noRows):  # accomodating for number of data rows + header row
+        row = sheet4.row(num)  # choosing a row to operate on
+        if num == 0:
+            for index in range(noCols):
+                value = tempHdrs[index]
+                row.write(index, value)
+        else:
+            for index in range(noCols):
+                if index == 0:
+                    value = float("{0:.2f}".format(t[num - 1]))
+                    row.write(index, value)
+                else:
+                    value = float("{0:.2f}".format(float(yD[num - 1][index - 1 + 6])))
+                    row.write(index, value)
+
+    book.save(dataPath+".xls")
 
 writeToXL(tArray,yArray)
 
