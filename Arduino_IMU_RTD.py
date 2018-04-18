@@ -10,7 +10,7 @@
 dataFolder = "C:/Users/alshehrj/Data/"
 dataFile = "IMUdata"
 
-port = 'com4'       # Configure which port the Arduino is connected to.
+port = 'com6'       # Configure which port the Arduino is connected to.
 
 mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
 axis = 2            # 0: x,    1: y,     2: z
@@ -36,19 +36,25 @@ if serial.Serial(port,baud).is_open:
 ser = serial.Serial(port,baud,timeout=1)
 ser.reset_input_buffer()
 ser.readline()
+axisStr = ["x","y","z"]
 
 if mode == 0:
     ind = 0 + axis
     yMin = -16.0
     yMax = 16.0
+    print "Displaying ACC Data [g]"
+    print axisStr[axis] + "-axis"
 elif mode == 1:
     ind = 3 + axis
     yMin = -10
     yMax = 10
+    print "Displaying GYRO Data [deg/s]"
+    print axisStr[axis] + "-axis"
 else:
     ind = 6
     yMin = 10
     yMax = 35
+    print "Displaying TEMP Data [C]"
 
 tArray = []
 yArray = []
