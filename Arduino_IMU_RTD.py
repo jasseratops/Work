@@ -4,6 +4,20 @@
 # Starkey Hearing Technologies
 # 3/27/2018
 
+
+##### User Config #####
+
+dataFolder = "C:/Users/alshehrj/Data/"
+dataFile = "IMUdata"
+
+port = 'com4'       # Configure which port the Arduino is connected to.
+
+mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
+axis = 2            # 0: x,    1: y,     2: z
+
+####################################
+
+
 import numpy as np
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
@@ -14,12 +28,7 @@ import re
 import xlwt
 
 
-port = 'com4'
 baud = 19200
-
-mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
-axis = 2            # 0: x,    1: y,     2: z
-
 
 if serial.Serial(port,baud).is_open:
     serial.Serial(port,baud).close()
@@ -54,12 +63,11 @@ def createTimeStamp():
     return ts
 
 timeStamp = createTimeStamp()
-
-startTime = time.time()
+#startTime = time.time()
+dataPath = dataFolder+dataFile + "_" + str(timeStamp)
 
 class Scope(object):
     def __init__(self, ax, maxt=4, dt=0.04):
-        print "going into scope INIT"
         self.ax = ax
         self.dt = dt
         self.maxt = maxt
@@ -71,7 +79,6 @@ class Scope(object):
         self.ax.set_xlim(0, self.maxt)
 
     def update(self, y):
-        print "going into scope UPDATE"
         lastt = self.tdata[-1]
         if lastt > self.tdata[0] + self.maxt:  # reset the arrays
             self.tdata = [self.tdata[-1]]
@@ -80,7 +87,6 @@ class Scope(object):
             self.ax.figure.canvas.draw()
 
         t = self.tdata[-1] + self.dt
-        print t
         self.tdata.append(t)
         tArray.append(t)
         self.ydata.append(y)
@@ -93,16 +99,12 @@ def flush():
 
 
 def emitter():
-    print "hello from EMITTER"
     while True:
-        #print "hello from while loop"
         #flush()
         val = ser.readline()
-        print ser.in_waiting
         allData = val.split(",")
 
         yArray.append(allData[:-1])     # discarding return line characters from the serial read.
-
 
         yield allData[ind]
 
@@ -113,12 +115,7 @@ scope = Scope(ax)
 ani = animation.FuncAnimation(fig, scope.update, emitter, interval=10,blit=True)
 plt.show()
 
-dataFolder = "C:/Users/alshehrj/Data/"
-dataFile = "IMUdata"
-dataPath = dataFolder+dataFile + "_" + str(timeStamp)
-print(dataPath)
 
-print np.shape(yArray)
 
 def writeToXL(t,yD):
     book = xlwt.Workbook()
@@ -210,9 +207,7 @@ def writeToXL(t,yD):
                     row.write(index, value)
 
     book.save(dataPath+".xls")
-
 writeToXL(tArray,yArray)
 
-print timeStamp
-print(tArray)
-print(yArray)
+print "Data is stored in the following data path: "
+print dataPath
