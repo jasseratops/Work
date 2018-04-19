@@ -1,11 +1,3 @@
-# Work
-# RT_StripChart
-# Jasser Alshehri
-# Starkey Hearing Technologies
-# 4/4/2018
-
-
-import numpy as np
 from numpy import sin, cos, pi
 import time
 from matplotlib.lines import Line2D

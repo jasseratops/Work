@@ -26,6 +26,8 @@ import serial
 import time
 import re
 import xlwt
+from Tkinter import *
+
 
 
 baud = 19200
