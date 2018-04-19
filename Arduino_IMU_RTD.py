@@ -10,9 +10,9 @@
 dataFolder = "C:/Users/alshehrj/Data/"
 dataFile = "IMUdata"
 
-port = 'com6'       # Configure which port the Arduino is connected to.
+port = 'com4'       # Configure which port the Arduino is connected to.
 
-mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
+mode = 2            # 0: Acc., 1: Gyro., 2: Temp.
 axis = 2            # 0: x,    1: y,     2: z
 
 ####################################
@@ -213,7 +213,8 @@ def writeToXL(t,yD):
                     row.write(index, value)
 
     book.save(dataPath+".xls")
-writeToXL(tArray,yArray)
+    print "-" * 10
+    print "Data is stored in the following data path: "
+    print dataPath
 
-print "Data is stored in the following data path: "
-print dataPath
+writeToXL(tArray,yArray)
