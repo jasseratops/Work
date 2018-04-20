@@ -6,7 +6,6 @@
 
 
 ##### User Config #####
-
 dataFolder = "C:/Users/alshehrj/Data/"
 dataFile = "IMUdata"
 
@@ -14,7 +13,6 @@ port = 'com4'       # Configure which port the Arduino is connected to.
 
 mode = 2            # 0: Acc., 1: Gyro., 2: Temp.
 axis = 2            # 0: x,    1: y,     2: z
-
 ####################################
 
 
@@ -122,7 +120,6 @@ scope = Scope(ax)
 # pass a generator in "emitter" to produce data for the update func
 ani = animation.FuncAnimation(fig, scope.update, emitter, interval=10,blit=True)
 plt.show()
-
 
 
 def writeToXL(t,yD):
