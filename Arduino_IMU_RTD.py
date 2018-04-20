@@ -3,7 +3,7 @@
 # Jasser Alshehri
 # Starkey Hearing Technologies
 # 3/27/2018
-
+# This was developed on matplotlib 2.0.2, and will not work with matplotlib 2.2.2
 
 ##### User Config #####
 dataFolder = "C:/Users/alshehrj/Data/"
