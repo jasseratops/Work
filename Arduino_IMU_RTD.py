@@ -69,7 +69,6 @@ def createTimeStamp():
     return ts
 
 timeStamp = createTimeStamp()
-#startTime = time.time()
 dataPath = dataFolder+dataFile + "_" + str(timeStamp)
 
 class Scope(object):
