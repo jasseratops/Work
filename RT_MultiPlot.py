@@ -16,10 +16,10 @@ matplotlib.rc('font', **font)
 # Setup figure and subplots
 f0 = figure(num = 0, figsize = (12, 8))#, dpi = 100)
 f0.suptitle("Oscillation decay", fontsize=12)
-ax01 = subplot2grid((2, 2), (0, 0))
-ax02 = subplot2grid((2, 2), (0, 1))
-ax03 = subplot2grid((2, 2), (1, 0), colspan=2, rowspan=1)
-ax04 = ax03.twinx()
+ax01 = subplot2grid((3, 1), (0, 0))
+ax02 = subplot2grid((3, 1), (1, 0))
+ax03 = subplot2grid((3, 1), (2, 0))
+#ax04 = ax03.twinx()
 #tight_layout()
 
 # Set titles of subplots
@@ -117,7 +117,7 @@ def updateData(self):
 
 # interval: draw new frame every 'interval' ms
 # frames: number of frames to draw
-simulation = animation.FuncAnimation(f0, updateData, blit=True, frames=200, interval=5, repeat=False)
+simulation = animation.FuncAnimation(f0, updateData, blit=True, frames=200, interval=1, repeat=False)
 
 # Uncomment the next line if you want to save the animation
 #simulation.save(filename='sim.mp4',fps=30,dpi=300)

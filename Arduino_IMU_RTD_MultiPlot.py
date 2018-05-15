@@ -20,6 +20,8 @@ import numpy as np
 from matplotlib.lines import Line2D
 import matplotlib.pyplot as plt
 import matplotlib.animation as animation
+from matplotlib.pylab import *
+from mpl_toolkits.axes_grid1 import host_subplot
 import serial
 import time
 import re
@@ -38,23 +40,71 @@ ser.reset_input_buffer()
 ser.readline()
 axisStr = ["x","y","z"]
 
-if mode == 0:
-    ind = 0 + axis
-    yMin = -16.0
-    yMax = 16.0
-    print "Displaying ACC Data [g]"
-    print axisStr[axis] + "-axis"
-elif mode == 1:
-    ind = 3 + axis
-    yMin = -10
-    yMax = 10
-    print "Displaying GYRO Data [deg/s]"
-    print axisStr[axis] + "-axis"
-else:
-    ind = 6
-    yMin = 10
-    yMax = 35
-    print "Displaying TEMP Data [C]"
+ind = []
+
+def figConfig():
+    global ind
+    if mode == 0:
+        ind = range(0,3)
+        yMin = -16.0
+        yMax = 16.0
+
+        f0 = figure(num=0, figsize=(12, 8))  # , dpi = 100)
+        f0.suptitle("Acc. Data", fontsize=12)
+        ax01 = subplot2grid((3, 1), (0, 0))
+        ax02 = subplot2grid((3, 1), (1, 0))
+        ax03 = subplot2grid((3, 1), (2, 0))
+
+        ax01.set_title('Acc. X')
+        ax02.set_title('Acc. Y')
+        ax03.set_title('Acc. Z')
+
+        ax01.set_ylim(yMin, yMax)
+        ax02.set_ylim(yMin, yMax)
+        ax03.set_ylim(yMin, yMax)
+
+
+
+        print "Displaying ACC Data [g]"
+        print axisStr[axis] + "-axis"
+
+    elif mode == 1:
+        ind = range(3,6)
+        yMin = -10
+        yMax = 10
+
+        f0 = figure(num=0, figsize=(12, 8))  # , dpi = 100)
+        f0.suptitle("Gyro. Data", fontsize=12)
+        ax01 = subplot2grid((3, 1), (0, 0))
+        ax02 = subplot2grid((3, 1), (1, 0))
+        ax03 = subplot2grid((3, 1), (2, 0))
+
+        ax01.set_title('Gyro X')
+        ax02.set_title('Gyro Y')
+        ax03.set_title('Gyro Z')
+
+        ax01.set_ylim(yMin, yMax)
+        ax02.set_ylim(yMin, yMax)
+        ax03.set_ylim(yMin, yMax)
+
+        print "Displaying GYRO Data [deg/s]"
+        print axisStr[axis] + "-axis"
+    else:
+        ind = [6]
+        yMin = 10
+        yMax = 35
+
+        f0 = figure(num=0, figsize=(12, 8))  # , dpi = 100)
+        f0.suptitle("Acc. Data", fontsize=12)
+
+        ax01 = subplot2grid((1, 1), (0, 0))
+
+        ax01.set_title('Temp')
+
+        ax01.set_ylim(yMin, yMax)
+
+        print "Displaying TEMP Data [C]"
+
 
 tArray = []
 yArray = []
@@ -69,7 +119,7 @@ def createTimeStamp():
     return ts
 
 timeStamp = createTimeStamp()
-dataPath = dataFolder+dataFile + "_" + str(timeStamp) + ".xls"
+dataPath = dataFolder+dataFile + "_" + str(timeStamp)
 
 class Scope(object):
     def __init__(self, ax, maxt=4, dt=0.04):
@@ -103,21 +153,26 @@ def flush():
     ser.readline()
 
 
-def emitter():
+def dataWriter():
     while True:
         #flush()
         val = ser.readline()
         allData = val.split(",")
-
         yArray.append(allData[:-1])     # discarding return line characters from the serial read.
+        dispArray = np.zeros(len(ind))
+        for i in range(len(ind)):
+            dispArray[i] = allData(ind[i])
 
-        yield allData[ind]
+        yield dispArray
+
+
+figConfig()
 
 fig, ax = plt.subplots()
-scope = Scope(ax)
+scope = Scope(ax01)
 
 # pass a generator in "emitter" to produce data for the update func
-ani = animation.FuncAnimation(fig, scope.update, emitter, interval=10,blit=True)
+ani = animation.FuncAnimation(fig, scope.update, dataWriter, interval=10,blit=True)
 plt.show()
 
 
@@ -210,9 +265,9 @@ def writeToXL(t,yD):
                     value = float("{0:.2f}".format(float(yD[num - 1][index - 1 + 6])))
                     row.write(index, value)
 
-    book.save(dataPath)
+    book.save(dataPath+".xls")
     print "-" * 10
     print "Data is stored in the following data path: "
     print dataPath
 
-writeToXL(tArray,yArray)
+writeToXL(tArray,yArray)(sys.argv))

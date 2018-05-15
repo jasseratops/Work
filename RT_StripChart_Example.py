@@ -31,11 +31,12 @@ class Scope(object):
         self.line.set_data(self.tdata, self.ydata)
         return self.line,
 
-
+i = 0
 def emitter(p=0.03):
+    global i
     'return a random value with probability p, else 0'
     while True:
-        yield cos(time.time()*2*pi)
+        yield cos(i*(2/200)*pi)
 
 # Fixing random state for reproducibility
 
