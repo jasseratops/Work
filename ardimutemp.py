@@ -14,10 +14,10 @@ dataFile = "testTemp"
 # 11p08dBV
 
 
-port = 'com7'       # Configure which port the Arduino is connected to.
+port = 'com7'  # Configure which port the Arduino is connected to.
 
-mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
-axis = 2            # 0: x,    1: y,     2: z
+mode = 0  # 0: Acc., 1: Gyro., 2: Temp.
+axis = 2  # 0: x,    1: y,     2: z
 ####################################
 
 
@@ -34,6 +34,7 @@ from Tkinter import *
 tArray = []
 yArray = []
 
+
 def createTimeStamp():
     ts = time.strftime("%c")
     ts = re.sub(" ", "_", ts)
@@ -41,6 +42,7 @@ def createTimeStamp():
     ts = re.sub(":", "-", ts)
 
     return ts
+
 
 class Scope(object):
     def __init__(self, ax, maxt=4, dt=0.04):
@@ -69,36 +71,39 @@ class Scope(object):
         self.line.set_data(self.tdata, self.ydata)
         return self.line,
 
+
 def flush():
-    #ser.reset_input_buffer()
+    # ser.reset_input_buffer()
     ser.readline()
+
 
 def emitter():
     while True:
-        #flush()
+        # flush()
         val = ser.readline()
         allData = val.split(",")
         print ser.in_waiting
-        yArray.append(allData[:-1])     # discarding return line characters from the serial read.
+        yArray.append(allData[:-1])  # discarding return line characters from the serial read.
 
         yield allData[ind]
 
-def writeToXL(t,yD,path):
+
+def writeToXL(t, yD, path):
     book = xlwt.Workbook()
     sheet1 = book.add_sheet("data")
 
-    hdrs = ["Time (s)","accX [g]","accY [g]","accZ [g]",
-            "gyroX[deg/s]","gyroY[deg/s]","gyroZ[deg/s]","temp [C]"]
+    hdrs = ["Time (s)", "accX [g]", "accY [g]", "accZ [g]",
+            "gyroX[deg/s]", "gyroY[deg/s]", "gyroZ[deg/s]", "temp [C]"]
     accHdrs = hdrs[0:4]
-    gyroHdrs = hdrs[0:1]+hdrs[4:7]
-    tempHdrs = hdrs[0:1]+hdrs[7:]
+    gyroHdrs = hdrs[0:1] + hdrs[4:7]
+    tempHdrs = hdrs[0:1] + hdrs[7:]
     dat = yArray
 
     noRows = np.shape(dat)[0] + 1
     noCols = len(hdrs)
 
-    for num in range(noRows):               # accomodating for number of data rows + header row
-        row = sheet1.row(num)               # choosing a row to operate on
+    for num in range(noRows):  # accomodating for number of data rows + header row
+        row = sheet1.row(num)  # choosing a row to operate on
         if num == 0:
             for index in range(noCols):
                 value = hdrs[index]
@@ -106,10 +111,10 @@ def writeToXL(t,yD,path):
         else:
             for index in range(noCols):
                 if index == 0:
-                    value = float("{0:.2f}".format(t[num-1]))
+                    value = float("{0:.2f}".format(t[num - 1]))
                     row.write(index, value)
                 else:
-                    value = float("{0:.2f}".format(float(yD[num-1][index-1])))
+                    value = float("{0:.2f}".format(float(yD[num - 1][index - 1])))
                     row.write(index, value)
 
     ###### Add AccData separately ######
@@ -117,8 +122,8 @@ def writeToXL(t,yD,path):
     noRows = np.shape(dat)[0] + 1
     noCols = len(accHdrs)
 
-    for num in range(noRows):               # accomodating for number of data rows + header row
-        row = sheet2.row(num)               # choosing a row to operate on
+    for num in range(noRows):  # accomodating for number of data rows + header row
+        row = sheet2.row(num)  # choosing a row to operate on
         if num == 0:
             for index in range(noCols):
                 value = accHdrs[index]
@@ -126,10 +131,10 @@ def writeToXL(t,yD,path):
         else:
             for index in range(noCols):
                 if index == 0:
-                    value = float("{0:.2f}".format(t[num-1]))
+                    value = float("{0:.2f}".format(t[num - 1]))
                     row.write(index, value)
                 else:
-                    value = float("{0:.2f}".format(float(yD[num-1][index-1])))
+                    value = float("{0:.2f}".format(float(yD[num - 1][index - 1])))
                     row.write(index, value)
 
     ###### Add GyroData separately ######
@@ -177,10 +182,65 @@ def writeToXL(t,yD,path):
     print "Data is stored in the following data path: "
     print path
 
+
+def writeToXLTemp(t, yD, path):
+    book = xlwt.Workbook()
+    sheet1 = book.add_sheet("data")
+
+    hdrs = ["Time (s)", "accX [g]", "accY [g]", "accZ [g]",
+            "gyroX[deg/s]", "gyroY[deg/s]", "gyroZ[deg/s]", "temp [C]"]
+    accHdrs = hdrs[0:4]
+    gyroHdrs = hdrs[0:1] + hdrs[4:7]
+    tempHdrs = hdrs[0:1] + hdrs[7:]
+    dat = yArray
+
+    noRows = np.shape(dat)[0] + 1
+    noCols = len(hdrs)
+
+    for num in range(noRows):  # accomodating for number of data rows + header row
+        row = sheet1.row(num)  # choosing a row to operate on
+        if num == 0:
+            for index in range(noCols):
+                value = hdrs[index]
+                row.write(index, value)
+        else:
+            for index in range(noCols):
+                if index == 0:
+                    value = float("{0:.2f}".format(t[num - 1]))
+                    row.write(index, value)
+                else:
+                    value = float("{0:.2f}".format(float(yD[num - 1][index - 1])))
+                    row.write(index, value)
+
+    ###### Add TempData separately ######
+    sheet4 = book.add_sheet("tempData")
+    noRows = np.shape(dat)[0] + 1
+    noCols = len(tempHdrs)
+
+    for num in range(noRows):  # accomodating for number of data rows + header row
+        row = sheet4.row(num)  # choosing a row to operate on
+        if num == 0:
+            for index in range(noCols):
+                value = tempHdrs[index]
+                row.write(index, value)
+        else:
+            for index in range(noCols):
+                if index == 0:
+                    value = float("{0:.2f}".format(t[num - 1]))
+                    row.write(index, value)
+                else:
+                    value = float("{0:.2f}".format(float(yD[num - 1][index - 1 + 6])))
+                    row.write(index, value)
+
+    book.save(path)
+    print "-" * 10
+    print "Data is stored in the following data path: "
+    print path
+
+
 baud = 19200
 
-
-axisStr = ["x","y","z"]
+axisStr = ["x", "y", "z"]
 
 if mode == 0:
     ind = 0 + axis
@@ -200,12 +260,12 @@ else:
     yMax = 35
     print "Displaying TEMP Data [C]"
 
-def runner(Folder,File,comPort=port):
 
+def runner(Folder, File, comPort=port):
     if serial.Serial(port, baud).is_open:
         serial.Serial(port, baud).close()
 
-    global ser # globalizing variable "ser" so it can be used by emitter and flush functions
+    global ser  # globalizing variable "ser" so it can be used by emitter and flush functions
 
     ser = serial.Serial(port, baud, timeout=1)
     ser.reset_input_buffer()
@@ -218,17 +278,19 @@ def runner(Folder,File,comPort=port):
     scope = Scope(ax)
 
     # pass a generator in "emitter" to produce data for the update func
-    ani = animation.FuncAnimation(fig, scope.update, emitter, interval=1,blit=True)
+    ani = animation.FuncAnimation(fig, scope.update, emitter, interval=1, blit=True)
     plt.show()
 
-    writeToXL(tArray,yArray,dataPath)
+    # writeToXL(tArray,yArray,dataPath)
 
-    return tArray,yArray
+    print yArray[6]
 
+    return tArray, yArray
 
 
 def main(args):
-    runner(dataFolder,dataFile)
+    runner(dataFolder, dataFile)
+
 
 if __name__ == '__main__':
     import sys

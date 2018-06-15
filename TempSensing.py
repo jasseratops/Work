@@ -11,23 +11,9 @@ dataFile = "testTemp"
 
 port = 'com7'
 
-import numpy as np
-from matplotlib.lines import Line2D
-import matplotlib.pyplot as plt
-import matplotlib.animation as animation
-import serial
-import time
-import re
-import xlwt
-from Tkinter import *
+import Arduino_IMU_RTD
 
-baud = 19200
 
-def DAQnDisplay(port,baud):
-    if serial.Serial(port, baud).is_open:
-        serial.Serial(port, baud).close()
+def main():
 
-    ser = serial.Serial(port, baud, timeout=1)
-    ser.reset_input_buffer()
-    ser.readline()
-
+    tDat,yDat = Arduino_IMU_RTD.runner(dataFolder,dataFile,port)
