@@ -16,7 +16,7 @@ dataFile = "testTemp"
 
 port = 'com7'  # Configure which port the Arduino is connected to.
 
-mode = 0  # 0: Acc., 1: Gyro., 2: Temp.
+mode = 2  # 0: Acc., 1: Gyro., 2: Temp.
 axis = 2  # 0: x,    1: y,     2: z
 ####################################
 
@@ -45,7 +45,7 @@ def createTimeStamp():
 
 
 class Scope(object):
-    def __init__(self, ax, maxt=4, dt=0.04):
+    def __init__(self, ax, maxt=60, dt=1.00):
         self.ax = ax
         self.dt = dt
         self.maxt = maxt
@@ -76,17 +76,22 @@ def flush():
     # ser.reset_input_buffer()
     ser.readline()
 
+i =0
 
 def emitter():
+    global i
     while True:
+        if i > 60:
+            StopIteration
+            i = 0
+            return
         # flush()
         val = ser.readline()
         allData = val.split(",")
-        print ser.in_waiting
+        #print ser.in_waiting
         yArray.append(allData[:-1])  # discarding return line characters from the serial read.
-
+        i +=1
         yield allData[ind]
-
 
 def writeToXL(t, yD, path):
     book = xlwt.Workbook()
@@ -182,7 +187,6 @@ def writeToXL(t, yD, path):
     print "Data is stored in the following data path: "
     print path
 
-
 def writeToXLTemp(t, yD, path):
     book = xlwt.Workbook()
     sheet1 = book.add_sheet("data")
@@ -261,8 +265,12 @@ else:
     print "Displaying TEMP Data [C]"
 
 
-def runner(Folder, File, comPort=port):
+def runner(comPort=port):
+    global yArray,tArray
+    yArray = []
+    tArray = []
     if serial.Serial(port, baud).is_open:
+        print ""
         serial.Serial(port, baud).close()
 
     global ser  # globalizing variable "ser" so it can be used by emitter and flush functions
@@ -270,22 +278,22 @@ def runner(Folder, File, comPort=port):
     ser = serial.Serial(port, baud, timeout=1)
     ser.reset_input_buffer()
     ser.readline()
-
-    timeStamp = createTimeStamp()
-    dataPath = str(Folder) + str(File) + "_" + str(timeStamp) + ".xls"
-
     fig, ax = plt.subplots()
     scope = Scope(ax)
 
     # pass a generator in "emitter" to produce data for the update func
-    ani = animation.FuncAnimation(fig, scope.update, emitter, interval=1, blit=True)
+    ani = animation.FuncAnimation(fig, scope.update, emitter, interval=1, blit=True, repeat=False)
     plt.show()
+
+    ser.close()
 
     # writeToXL(tArray,yArray,dataPath)
 
-    print yArray[6]
 
-    return tArray, yArray
+    tempArray = np.asarray(yArray)[:,6]
+    timeArray = np.asarray(tArray)
+
+    return timeArray, tempArray
 
 
 def main(args):
