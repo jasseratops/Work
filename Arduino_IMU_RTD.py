@@ -7,11 +7,16 @@
 
 ##### User Config #####
 dataFolder = "C:/Users/alshehrj/Data/"
-dataFile = "IMUdata"
+dataFile = "testTemp"
 
-port = 'com4'       # Configure which port the Arduino is connected to.
+# Baseline
+# 1p8dBV
+# 11p08dBV
 
-mode = 2            # 0: Acc., 1: Gyro., 2: Temp.
+
+port = 'com7'       # Configure which port the Arduino is connected to.
+
+mode = 0            # 0: Acc., 1: Gyro., 2: Temp.
 axis = 2            # 0: x,    1: y,     2: z
 ####################################
 
@@ -26,39 +31,8 @@ import re
 import xlwt
 from Tkinter import *
 
-
-
-baud = 19200
-
-if serial.Serial(port,baud).is_open:
-    serial.Serial(port,baud).close()
-
-ser = serial.Serial(port,baud,timeout=1)
-ser.reset_input_buffer()
-ser.readline()
-axisStr = ["x","y","z"]
-
-if mode == 0:
-    ind = 0 + axis
-    yMin = -16.0
-    yMax = 16.0
-    print "Displaying ACC Data [g]"
-    print axisStr[axis] + "-axis"
-elif mode == 1:
-    ind = 3 + axis
-    yMin = -10
-    yMax = 10
-    print "Displaying GYRO Data [deg/s]"
-    print axisStr[axis] + "-axis"
-else:
-    ind = 6
-    yMin = 10
-    yMax = 35
-    print "Displaying TEMP Data [C]"
-
 tArray = []
 yArray = []
-
 
 def createTimeStamp():
     ts = time.strftime("%c")
@@ -67,9 +41,6 @@ def createTimeStamp():
     ts = re.sub(":", "-", ts)
 
     return ts
-
-timeStamp = createTimeStamp()
-dataPath = dataFolder+dataFile + "_" + str(timeStamp) + ".xls"
 
 class Scope(object):
     def __init__(self, ax, maxt=4, dt=0.04):
@@ -99,29 +70,20 @@ class Scope(object):
         return self.line,
 
 def flush():
-    ser.reset_input_buffer()
+    #ser.reset_input_buffer()
     ser.readline()
-
 
 def emitter():
     while True:
         #flush()
         val = ser.readline()
         allData = val.split(",")
-
+        print ser.in_waiting
         yArray.append(allData[:-1])     # discarding return line characters from the serial read.
 
         yield allData[ind]
 
-fig, ax = plt.subplots()
-scope = Scope(ax)
-
-# pass a generator in "emitter" to produce data for the update func
-ani = animation.FuncAnimation(fig, scope.update, emitter, interval=10,blit=True)
-plt.show()
-
-
-def writeToXL(t,yD):
+def writeToXL(t,yD,path):
     book = xlwt.Workbook()
     sheet1 = book.add_sheet("data")
 
@@ -210,9 +172,60 @@ def writeToXL(t,yD):
                     value = float("{0:.2f}".format(float(yD[num - 1][index - 1 + 6])))
                     row.write(index, value)
 
-    book.save(dataPath)
+    book.save(path)
     print "-" * 10
     print "Data is stored in the following data path: "
-    print dataPath
+    print path
 
-writeToXL(tArray,yArray)
+baud = 19200
+
+if serial.Serial(port,baud).is_open:
+    serial.Serial(port,baud).close()
+
+ser = serial.Serial(port,baud,timeout=1)
+ser.reset_input_buffer()
+ser.readline()
+axisStr = ["x","y","z"]
+
+if mode == 0:
+    ind = 0 + axis
+    yMin = -16.0
+    yMax = 16.0
+    print "Displaying ACC Data [g]"
+    print axisStr[axis] + "-axis"
+elif mode == 1:
+    ind = 3 + axis
+    yMin = -10
+    yMax = 10
+    print "Displaying GYRO Data [deg/s]"
+    print axisStr[axis] + "-axis"
+else:
+    ind = 6
+    yMin = 10
+    yMax = 35
+    print "Displaying TEMP Data [C]"
+
+def runner(Folder,File):
+    timeStamp = createTimeStamp()
+    dataPath = str(Folder) + str(File) + "_" + str(timeStamp) + ".xls"
+
+    fig, ax = plt.subplots()
+    scope = Scope(ax)
+
+    # pass a generator in "emitter" to produce data for the update func
+    ani = animation.FuncAnimation(fig, scope.update, emitter, interval=1,blit=True)
+    plt.show()
+
+    writeToXL(tArray,yArray,dataPath)
+
+    return tArray,yArray
+
+
+
+def main(args):
+    runner(dataFolder,dataFile)
+
+if __name__ == '__main__':
+    import sys
+
+    sys.exit(main(sys.argv))
