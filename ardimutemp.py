@@ -76,7 +76,7 @@ def flush():
     # ser.reset_input_buffer()
     ser.readline()
 
-i =0
+i=0
 
 def emitter():
     global i
@@ -269,13 +269,13 @@ def runner(comPort=port):
     global yArray,tArray
     yArray = []
     tArray = []
-    if serial.Serial(port, baud).is_open:
+    if serial.Serial(comPort, baud).is_open:
         print ""
-        serial.Serial(port, baud).close()
+        serial.Serial(comPort, baud).close()
 
     global ser  # globalizing variable "ser" so it can be used by emitter and flush functions
 
-    ser = serial.Serial(port, baud, timeout=1)
+    ser = serial.Serial(comPort, baud, timeout=1)
     ser.reset_input_buffer()
     ser.readline()
     fig, ax = plt.subplots()
