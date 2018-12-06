@@ -49,21 +49,21 @@ def main(args):
         else:
             outp[i] = inpN[i]*(gain-exp(-t[i-(len(inp)/2)]/tau)) # Compression release
 
-    env = abs(sig.hilbert(outp))  # envelope detection. go nuts!
+    env = abs(sig.hilbert(np.abs(outp)))  # envelope detection. go nuts!
 
     smooth = np.array(np.shape(env))
 
-    b, a = sig.butter(3,(100/fs),btype="lowpass")
+    b, a = sig.butter(3,(50/fs),btype="lowpass")
 
     zi = sig.lfilter_zi(b,a)
     z,_= sig.lfilter(b,a,env,zi=zi*env[0])
 
     plt.figure()
     plt.plot(t,inpN,label="input to hearing aid")
-    plt.plot(t,outp,label="output of hearing aid")
+    #plt.plot(t,outp,label="output of hearing aid")
     #plt.plot(t,env,label="envelope")
-    plt.plot(t,z,label="filtered envelope")
-    plt.plot(t,filtinp,label="env of filt. input")
+    #plt.plot(t,z,label="filtered envelope")
+    #plt.plot(t,filtinp,label="env of filt. input")
     plt.legend()
     plt.show()
     return 0

@@ -29,6 +29,7 @@ import serial
 import time
 import re
 import xlwt
+from winsound import Beep
 from Tkinter import *
 
 tArray = []
@@ -83,12 +84,14 @@ def emitter():
     while True:
         if i > 60:
             StopIteration
+            print "Done collecting"
+            Beep(300,500)
             i = 0
             return
         # flush()
         val = ser.readline()
         allData = val.split(",")
-        #print ser.in_waiting
+        print str(i) + ": " + str(allData[-2])
         yArray.append(allData[:-1])  # discarding return line characters from the serial read.
         i +=1
         yield allData[ind]
@@ -260,10 +263,11 @@ elif mode == 1:
     print axisStr[axis] + "-axis"
 else:
     ind = 6
-    yMin = 10
-    yMax = 35
+    yMin = 23
+    yMax = 33
     print "Displaying TEMP Data [C]"
 
+print "index: " + str(ind)
 
 def runner(comPort=port):
     global yArray,tArray

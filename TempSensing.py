@@ -7,12 +7,12 @@
 
 ##### User Config #####
 
-dataFolder = "C:/Users/alshehrj/Data/"
-dataFile = "testTemp"
+dataFolder = "C:/Users/alshehrj/Data/IMU_Temp/30deg/"
+dataFile = "IMU_Temp78910"
 
 port = 'com7'
 
-noDataPnts = 3
+noDataPnts = 4
 
 ###########################
 
@@ -37,7 +37,7 @@ def main(args):
     dataPath = str(dataFolder) + str(dataFile) + "_" + str(timeStamp) + ".xls"
     book = xlwt.Workbook()
     sheet1 = book.add_sheet("data")
-    noRows = 62
+    noRows = 61
 
     ### write time
 
@@ -52,7 +52,7 @@ def main(args):
 
     for count in range(noDataPnts):
         col = count + 1
-        print "Collecting Temp Data" + str(col)
+        print "Collecting Temp Data " + str(col)
 
         _,tempDat = ardimutemp.runner(port)
         yD = tempDat
@@ -72,5 +72,4 @@ def main(args):
 
 if __name__ == '__main__':
     import sys
-
     sys.exit(main(sys.argv))
